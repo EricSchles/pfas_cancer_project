@@ -132,4 +132,5 @@ def main():
         print(key_result, results[key_result])
 
 if __name__ == '__main__':
+    # do nothing
     main()
