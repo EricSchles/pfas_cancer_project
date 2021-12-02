@@ -1,6 +1,4 @@
 import pandas as pd
-import lxml.html
-import requests
 
 def read_pfas_data() -> pd.DataFrame:
     """
