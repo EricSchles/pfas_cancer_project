@@ -7,7 +7,7 @@ from mypy import Dict
 
 
 def get_state_level_cancer_count_and_pfas_levels() -> pd.DataFrame:
-    return pd.read_csv("state_level_cancer_count_and_pfas_levels.csv")
+    return pd.read_csv("data/state_level_cancer_count_and_pfas_levels.csv")
 
 def get_Xy(df):
     X = df[["npdes_count", "count"]]
