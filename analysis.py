@@ -3,7 +3,6 @@ from scipy.stats import (
 )
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from mypy import Dict
 
 
 def get_state_level_cancer_count_and_pfas_levels() -> pd.DataFrame:
@@ -22,7 +21,7 @@ def get_model():
         max_depth=4
     )
 
-def get_feature_importances(model) -> Dict:
+def get_feature_importances(model) -> dict:
     zipped_results = zip(["npdes_count", "count"], model.feature_importances_)
     results = list(zipped_results)
     return dict(results)

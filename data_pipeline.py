@@ -1,7 +1,6 @@
 import pandas as pd
 import lxml.html
 import requests
-from mypy import Dict
 
 def read_pfas_data() -> pd.DataFrame:
     return pd.read_excel(
@@ -33,7 +32,7 @@ def merge_data(cancer_df, npdes_per_state, no_npdes_per_state, per_state_count):
     final_df = final_df.merge(no_npdes_per_state, on="State", how="inner")
     return final_df.merge(per_state_count, on="State", how="inner")
 
-def get_abbreviation_map() -> Dict:
+def get_abbreviation_map() -> dict:
     return {
         "Alabama": "AL",
         "Alaska": "AK",
@@ -128,8 +127,10 @@ def processing_pipeline(all_data, npdes, no_npdes, cancer_df):
     return update_rate_to_total_population(final_df)
 
 def main():
-    cancer_df = read_cancer_data()
     pfas_generators_df = read_pfas_data()
+    import code
+    code.interact(local=locals())
+    cancer_df = read_cancer_data()
     pfas_generators_df_npdes = pfas_generators_df[pfas_generators_df["NPDES_FLAG"] == "Y"]
     pfas_generators_df_no_npdes = pfas_generators_df[pfas_generators_df["NPDES_FLAG"] == "N"]
     final_df = processing_pipeline(
