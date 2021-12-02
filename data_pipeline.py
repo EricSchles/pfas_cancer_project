@@ -1,14 +1,15 @@
 import pandas as pd
 import lxml.html
 import requests
+from mypy import Dict
 
-def read_pfas_data():
+def read_pfas_data() -> pd.DataFrame:
     return pd.read_excel(
         "Facilities in Industries that May be Handling PFAS Data 07-20-2021.xlsx",
         sheet_name='Data'
     )
 
-def read_cancer_data():
+def read_cancer_data() -> pd.DataFrame:
     """
     uscs data, data is in rates of incidence per 100,000 people.
     So higher numbers means more cancer incidence in the state, normalized
@@ -16,15 +17,24 @@ def read_cancer_data():
     """
     return pd.read_csv("uscs_map_incidence_all.csv")
 
-def processing_pipeline(all_data, npdes, no_npdes, cancer_df):
-    npdes_per_state = npdes["State"].value_counts().reset_index().rename({"index": "State", "State":"npdes_count"}, axis=1)
-    no_npdes_per_state = no_npdes["State"].value_counts().reset_index().rename({"index": "State", "State":"no_npdes_count"}, axis=1)
-    per_state_count = all_data["State"].value_counts().reset_index().rename({"index": "State", "State":"count"}, axis=1)
+def get_us_pop() -> pd.DataFrame:
+    return pd.read_csv("2019_Census_US_Population_Data_By_State_Lat_Long.csv")
+    
+def get_counts_by_state(df: pd.DataFrame, count_col_name: str) -> pd.DataFrame:
+    value_counts_per_state = df["State"].value_counts()
+    new_dataframe = value_counts_per_state.reset_index()
+    return new_dataframe.rename(
+        {"index": "State", "State": count_col_name}
+        , axis=1
+    )
+
+def merge_data(cancer_df, npdes_per_state, no_npdes_per_state, per_state_count):
     final_df = cancer_df.merge(npdes_per_state, on="State", how="inner")
     final_df = final_df.merge(no_npdes_per_state, on="State", how="inner")
-    final_df = final_df.merge(per_state_count, on="State", how="inner")
-    
-    us_state_to_abbrev = {
+    return final_df.merge(per_state_count, on="State", how="inner")
+
+def get_abbreviation_map() -> Dict:
+    return {
         "Alabama": "AL",
         "Alaska": "AK",
         "Arizona": "AZ",
@@ -84,36 +94,54 @@ def processing_pipeline(all_data, npdes, no_npdes, cancer_df):
         "U.S. Virgin Islands": "VI",
     }
 
-    us_pop = pd.read_csv("2019_Census_US_Population_Data_By_State_Lat_Long.csv")
-    us_pop["STATE"] = us_pop["STATE"].map(us_state_to_abbrev)
-    us_pop = us_pop.rename({"STATE":"State"}, axis=1)
-    final_df = final_df.merge(us_pop, on="State", how="inner")
+def transform_state_col(us_pop: pd.DataFrame) -> pd.DataFrame:
+    abbreviation_map = get_abbreviation_map()
+    us_pop["STATE"] = us_pop["STATE"].map(abbreviation_map)
+    return us_pop.rename({"STATE":"State"}, axis=1)
+
+def get_us_population_df() -> pd.DataFrame:
+    us_pop = get_us_pop()
+    return transform_state_col(us_pop)
+
+def convert_population_for_rate_calculation(final_df):
     # since rate is per 100,000 people, we need to divide the population by 100,000
     final_df["POPESTIMATE2019"] /= 100000
+    return final_df
+
+def update_rate_to_total_population(final_df):
     final_df["Rate"] *= final_df["POPESTIMATE2019"]
     return final_df
 
-# facility name
-# lat, lon
-# echo id
-# industries are different
+def processing_pipeline(all_data, npdes, no_npdes, cancer_df):
+    npdes_per_state = get_counts_by_state(npdes, "npdes_count")
+    no_npdes_per_state = get_counts_by_state(no_npdes, "no_npdes_count")
+    per_state_count = get_counts_by_state(all_data, "count")
+    final_df = merge_data(
+        cancer_df,
+        npdes_per_state,
+        no_npdes_per_state,
+        per_state_count
+    )
+    us_pop = get_us_population_df()
+    final_df = final_df.merge(us_pop, on="State", how="inner")
+    final_df = convert_population_for_rate_calculation(final_df)
+    return update_rate_to_total_population(final_df)
 
-cancer_df = read_cancer_data()
-pfas_generators_df = read_pfas_data()
-pfas_generators_df_npdes = pfas_generators_df[pfas_generators_df["NPDES_FLAG"] == "Y"]
-pfas_generators_df_no_npdes = pfas_generators_df[pfas_generators_df["NPDES_FLAG"] == "N"]
-final_df = processing_pipeline(
-    pfas_generators_df,
-    pfas_generators_df_npdes,
-    pfas_generators_df_no_npdes,
-    cancer_df
-)
+def main():
+    cancer_df = read_cancer_data()
+    pfas_generators_df = read_pfas_data()
+    pfas_generators_df_npdes = pfas_generators_df[pfas_generators_df["NPDES_FLAG"] == "Y"]
+    pfas_generators_df_no_npdes = pfas_generators_df[pfas_generators_df["NPDES_FLAG"] == "N"]
+    final_df = processing_pipeline(
+        pfas_generators_df,
+        pfas_generators_df_npdes,
+        pfas_generators_df_no_npdes,
+        cancer_df
+    )
+    final_df.to_csv("state_level_cancer_count_and_pfas_levels.csv")
 
-
-#print(ks_2samp(final_df["Rate"], final_df["count"]))
-# result: KstestResult(statistic=0.7843137254901961, pvalue=8.916351737215017e-16)
-#print(spearmanr(final_df["Rate"], final_df["count"]))
-# result: SpearmanrResult(correlation=0.7743891402714933, pvalue=2.6252318611349003e-11)
+if __name__ == '__main__':
+    main()
 
     
 
