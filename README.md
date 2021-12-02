@@ -16,6 +16,12 @@ https://statecancerprofiles.cancer.gov/ is the source for [uscs_cancer_incidence
 
 https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html is the source for [census data 2019](https://github.com/EricSchles/pfas_cancer_project/blob/main/data/2019_Census_US_Population_Data_By_State_Lat_Long.csv)
 
+## CI/CD
+
+How to set up CI/CD
+
+https://circleci.com/blog/setting-up-continuous-integration-with-github/
+
 ## Docker
 
 Docker steps:
