@@ -295,8 +295,6 @@ def processing_pipeline(
 
 def main():
     pfas_generators_df = read_pfas_data()
-    import code
-    code.interact(local=locals())
     cancer_df = read_cancer_data()
     pfas_generators_df_npdes = pfas_generators_df[pfas_generators_df["NPDES_FLAG"] == "Y"]
     pfas_generators_df_no_npdes = pfas_generators_df[pfas_generators_df["NPDES_FLAG"] == "N"]
