@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from scipy.stats import (
     ks_2samp, spearmanr
 )
@@ -42,7 +43,21 @@ def get_Xy(df : pd.DataFrame) -> tuple:
 
 def get_model() -> GradientBoostingRegressor:
     """
-    Generates the model
+    Generates the model -
+    
+    The model fails to converge on anything linear,
+    implying the data has a highly non-linear relationship.
+    The number of estimators is likely around this high,
+    however learning rate, regularization and max depth may all
+    need to be toyed with further.
+    
+    Parameters
+    ----------
+    None
+    
+    Returns
+    -------
+    The hyper parameters set for a Gradient Boosting Tree.
     """
     return GradientBoostingRegressor(
         learning_rate=0.0001,
@@ -52,11 +67,48 @@ def get_model() -> GradientBoostingRegressor:
     )
 
 def get_feature_importances(model) -> dict:
+    """
+    Gets the feature importances for the regressor.
+    
+    Parameters
+    ----------
+    * model : GradientBoostingRegressor - a fit model.
+    
+    Returns
+    -------
+    A dictionary of the relative feature importances of:
+    * npdes_count
+    * count
+    
+    Note: preliminary results show that npdes is more important than overall count.
+    """
     zipped_results = zip(["npdes_count", "count"], model.feature_importances_)
     results = list(zipped_results)
     return dict(results)
     
-def get_results(X, y, model):
+def get_results(X: pd.DataFrame, y: np.array, model: GradientBoostingRegressor) -> dict:
+    """
+    This is where the model is trained and the results for analysis
+    generated.
+    
+    The reason we choose not to split into train and test is,
+    this model is for _exploratory_ purposes, not for predictive ones.
+    There is no "generalization" criteria or intent.  This model is there
+    to explain the data, thus there is no reason to split into train and test.
+    
+    Parameters
+    ----------
+    * X : pd.DataFrame - the exogenous variables
+    * y : np.array - the endogenous variable
+    * model : GradientBoostingRegressor - the unfit model
+
+    Returns
+    -------
+    * fit - mean absolute error for the model
+    feature importances for:
+    * npdes_count
+    * count
+    """
     model.fit(X, y)
     y_pred_gbt = model.predict(X)
     feature_importances = get_feature_importances(model)
