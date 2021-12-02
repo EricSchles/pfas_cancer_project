@@ -5,7 +5,7 @@ from mypy import Dict
 
 def read_pfas_data() -> pd.DataFrame:
     return pd.read_excel(
-        "Facilities in Industries that May be Handling PFAS Data 07-20-2021.xlsx",
+        "data/Facilities in Industries that May be Handling PFAS Data 07-20-2021.xlsx",
         sheet_name='Data'
     )
 
@@ -15,10 +15,10 @@ def read_cancer_data() -> pd.DataFrame:
     So higher numbers means more cancer incidence in the state, normalized
     for population.
     """
-    return pd.read_csv("uscs_map_incidence_all.csv")
+    return pd.read_csv("data/uscs_map_incidence_all.csv")
 
 def get_us_pop() -> pd.DataFrame:
-    return pd.read_csv("2019_Census_US_Population_Data_By_State_Lat_Long.csv")
+    return pd.read_csv("data/2019_Census_US_Population_Data_By_State_Lat_Long.csv")
     
 def get_counts_by_state(df: pd.DataFrame, count_col_name: str) -> pd.DataFrame:
     value_counts_per_state = df["State"].value_counts()
@@ -138,7 +138,7 @@ def main():
         pfas_generators_df_no_npdes,
         cancer_df
     )
-    final_df.to_csv("state_level_cancer_count_and_pfas_levels.csv")
+    final_df.to_csv("data/state_level_cancer_count_and_pfas_levels.csv")
 
 if __name__ == '__main__':
     main()
