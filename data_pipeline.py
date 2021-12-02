@@ -1,12 +1,6 @@
 import pandas as pd
 import lxml.html
 import requests
-from scipy.stats import (
-    ks_2samp, spearmanr
-)
-from sklearn.svm import LinearSVR
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 def read_pfas_data():
     return pd.read_excel(
@@ -115,23 +109,11 @@ final_df = processing_pipeline(
     cancer_df
 )
 
-X = final_df[["npdes_count", "count"]]
-y = final_df["Rate"]
-gbt_reg = GradientBoostingRegressor(learning_rate=0.0001, n_estimators=100000, subsample=0.8, max_depth=4)
-gbt_reg.fit(X, y)
-y_pred_gbt = gbt_reg.predict(X)
-print("fit", mean_absolute_error(y, y_pred_gbt))
-print(dict(list(zip(["npdes_count", "count"], gbt_reg.feature_importances_))))
-import code
-code.interact(local=locals())
 
 #print(ks_2samp(final_df["Rate"], final_df["count"]))
 # result: KstestResult(statistic=0.7843137254901961, pvalue=8.916351737215017e-16)
 #print(spearmanr(final_df["Rate"], final_df["count"]))
 # result: SpearmanrResult(correlation=0.7743891402714933, pvalue=2.6252318611349003e-11)
-
-
-reg = LinearSVR(random_state=0, tol=1e-5)
 
     
 
